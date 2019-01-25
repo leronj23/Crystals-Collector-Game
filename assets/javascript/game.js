@@ -1,87 +1,120 @@
 $(document).ready(function () {
 
-    var defaultGameState = {
-      numberOptions: [1,2,3,4],
-      crystalsImages: [
-        "assets/images/blue.png", "assets/images/pink.png", "assets/images/purple.png", "assets/images/yellow.png"
-      ],
-      randomGameNumber: null,
-      totalScore: 0,
-      wins: 0,
-      loses: 0
-    };
+    // Vars
+    var numberOptions = [];
+    var crystalsImages = ["assets/images/blue.png", "assets/images/pink.png", "assets/images/purple.png", "assets/images/yellow.png"];
+    var randomGameNumber = randomIntFromInterval(19, 120);
+    var totalScore = 0;
+    var wins = 0;
+    var loses = 0;
 
-    var onGoingGame = {};
+    // Loop to generate random numbers for each crystal
+    function generateCrystalRandomNumber() {
+        for (var i = 0; i < 4; i++) {
 
-    function initializeGame() {
-        $("#crystalContainer").empty();
+            numberOptions.push(randomIntFromInterval(1, 12))
+        }
 
-        onGoingGame = JSON.parse((JSON.stringify(defaultGameState)));
+        console.log(numberOptions);
 
-        onGoingGame.numberOptions.fill(randomIntFromInterval(1, 12), 0,4);
-
-        var processStart = [turnOffListener, displayScoreWinsLoses, loadCrystals, attachListener].forEach(function(fn) {
-            fn(onGoingGame);
-        });
-
-        return true;
+        // Display Score, Wins, & Loses
+        displayScoreWinsLoses();
     }
+    generateCrystalRandomNumber();
 
     // Generate Random Number
-    function randomIntFromInterval(min, max) {
+    function randomIntFromInterval(min, max) // min and max included
+    {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
     // Display Score, Wins, & Loses
-    function displayScoreWinsLoses({ randomGameNumber }) {
+    function displayScoreWinsLoses() {
+
         // Display random game number
         $("#score").text(randomGameNumber);
+
+        // Load Crystals
+        loadCrystals();
     }
 
     // Load Crystals
-    function loadCrystals({ numberOptions }) {
-        numberOptions.forEach(function(numberOption, index) {
-            $("#crystalContainer").append($("<img>")
-                .addClass("crystal-image")
-                .attr("src", crystalsImages[index])
-                .attr("data-crystalvalue", numberOption));
-        });
+    function loadCrystals() {
+
+        //  Loop to generate the crystals
+        for (var i = 0; i < numberOptions.length; i++) {
+
+            // Create an image tag
+            var imageCrystal = $("<img>");
+
+            // Add the crystal css class to the image tag
+            imageCrystal.addClass("crystal-image");
+
+            // Add the crystal image
+            imageCrystal.attr("src", crystalsImages[i]);
+
+            // Add a data value for each crystal
+            imageCrystal.attr("data-crystalvalue", numberOptions[i]);
+
+            //console.log(imageCrystal.attr("data-crystalvalue"));
+
+            // Add each crystal to the crystal container
+            $("#crystalContainer").append(imageCrystal);
+        }
     }
 
-    function turnOffListener() {
-        $(document).off();
+    // Class name is now the button.
+    //$(".crystal-image").on("click", function () {
+
+    // Cannot use the above click event because it wont fire due to using empty() on line 115
+    $(document).on('click', ".crystal-image", function () {
+
+        console.log($(this).attr("data-crystalvalue"));
+
+        var crystalValue = ($(this).attr("data-crystalvalue"));
+        totalScore += parseInt(crystalValue);
+
+        // Display total score
+        $("#total").text(totalScore);
+
+        // Check status of Random Game Number
+        if ((randomGameNumber - totalScore) == 0) {
+
+            // Add to wins
+            wins++;
+
+            // Display number of wins
+            $("#wins").text(wins);
+
+            // Reset Game
+            resetGame();
+        }
+        else if ((randomGameNumber - totalScore) < 0) {
+
+            // Add to loses
+            loses++;
+
+            // Display number of wins
+            $("#loses").text(loses);
+
+            // Reset Game
+            resetGame();
+        }
+    });
+
+    // Reset Game
+    function resetGame() {
+
+        numberOptions = [];
+        randomGameNumber = randomIntFromInterval(19, 120);
+        totalScore = 0;
+
+        // Display total score
+        $("#total").text("");
+
+        $("#crystalContainer").empty();
+
+        // Loop to generate random numbers for each crystal
+        generateCrystalRandomNumber();
     }
-
-    function attachListener(state) {
-        $(document).on('click', ".crystal-image", function () {
-            state.totalScore += parseInt(($(this).attr("data-crystalvalue")));
-
-            $("#total").text(state.totalScore);
-    
-            if ((randomGameNumber - state.totalScore) == 0) {
-    
-                // Add to wins
-                state.wins++;
-    
-                // Display number of wins
-                $("#wins").text(state.wins);
-    
-                // Reset Game
-                initializeGame();
-                return;
-            }
-            if ((state.randomGameNumber - state.totalScore) < 0) {
-    
-                // Add to loses
-                state.loses++;
-    
-                // Display number of wins
-                $("#loses").text(state.loses);
-    
-                // Reset Game
-                initializeGame();
-            }
-        });
-    }
-
 });
