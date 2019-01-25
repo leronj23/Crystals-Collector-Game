@@ -117,8 +117,4 @@ $(document).ready(function () {
         // Loop to generate random numbers for each crystal
         generateCrystalRandomNumber();
     }
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> 9f2480264ce830016690f2b86f8a437265068b53
